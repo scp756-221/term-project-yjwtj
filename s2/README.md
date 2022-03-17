@@ -5,7 +5,9 @@ them.
 
 This is a public Flask server written in Python.
 
-There are several versions, each in its own subdirectory:
+**Only v2 is used in this version of project. And the ```PERCENT_ERROR``` can be adjusted accordingly.**
+
+<s> There are several versions, each in its own subdirectory:
 
 standalone: A version that maintains its database internally
   and does not require any other services to run. It includes
@@ -19,6 +21,8 @@ v1: A version that relies upon the DB service to store its
   described for "standalone" above.
 
 v1.1: A version specifically for Assignment&nbsp;7.  See the `README.md` in the subdirectory and the assignment description for further details.
+
+</s>
 
 v2: This version is configurable to return errors for a specified
   percentage (`PERCENT_ERROR`) of calls to `read`. It does not
