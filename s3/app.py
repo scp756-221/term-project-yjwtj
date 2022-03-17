@@ -114,6 +114,43 @@ def update_playlist(playlist_id):
     
     return response.json()
 
+@bp.route('/', methods=['POST'])
+def create_list():
+    headers = request.headers
+    # check header here
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
+    try:
+        content = request.get_json()
+        PlayListName = content['PlayListName']
+        PlayList = content['PlayList']
+    except Exception:
+        return json.dumps({"message": "error reading arguments"})
+    url = db['name'] + '/' + db['endpoint'][1]
+    response = requests.post(
+        url,
+        json={"objtype": "playlist", "PlayListName": ListName, "PlayList": PlayList},
+        headers={'Authorization': headers['Authorization']})
+    return (response.json())
+
+
+@bp.route('/<p_id>', methods=['DELETE'])
+def delete_list(p_id):
+    headers = request.headers
+    # check header here
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
+    url = db['name'] + '/' + db['endpoint'][2]
+    response = requests.delete(
+        url,
+        params={"objtype": "playlist", "objkey": p_id},
+        headers={'Authorization': headers['Authorization']})
+    return (response.json())
+
 
 # All database calls will have this prefix.  Prometheus metric
 # calls will not---they will have route '/metrics'.  This is
