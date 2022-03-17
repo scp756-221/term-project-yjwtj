@@ -2,22 +2,13 @@
 Python  API for the playlist service.
 """
 
-<<<<<<< HEAD
 # Installed packages
 import requests
 
-class Playlist():
-    """Python API for the music service.
-=======
-# Standard library modules
-
-# Installed packages
-import requests
 
 
 class Playlist():
     """Python API for the Playlist service.
->>>>>>> jeff
 
     Handles the details of formatting HTTP requests and decoding
     the results.
@@ -26,11 +17,7 @@ class Playlist():
     ----------
     url: string
         The URL for accessing the music service. Often
-<<<<<<< HEAD
         'http://cmpt756s2:{port_number}/'. Note the trailing slash.
-=======
-        'http://cmpt756s2:30001/'. Note the trailing slash.
->>>>>>> jeff
     auth: string
         Authorization code to pass to the music service. For many
         implementations, the code is required but its content is
@@ -40,7 +27,6 @@ class Playlist():
         self._url = url
         self._auth = auth
 
-<<<<<<< HEAD
     def read(self, p_id):
         """Read a playlist by its p_id.
 
@@ -81,7 +67,7 @@ class Playlist():
             json={"SongList": song_list}
         )
         return response.status_code
-=======
+        
     def create(self, list_name, song=None):
         """Create a playlist.
 
@@ -133,4 +119,3 @@ class Playlist():
             self._url + p_id,
             headers={'Authorization': self._auth}
         )
->>>>>>> jeff
