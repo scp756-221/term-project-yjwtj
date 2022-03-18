@@ -1,0 +1,30 @@
+
+# Convenient aliases for Docker
+
+alias dls='docker image ls '
+alias drm='docker image rm '
+alias dri='docker run -it '
+
+alias drmc='docker container rm '
+alias dps='docker container ls -a'
+alias dstop='docker container stop '
+alias dkill='docker container rm -f '
+alias dcon='docker exec -it '
+
+# from https://github.com/nickjj/dotfiles/blob/master/.aliases as suggested by Raju Gandhi
+dhtags () {
+    local image="${1}"
+
+    wget -q https://registry.hub.docker.com/v1/repositories/"${image}"/tags -O - \
+        | tr -d '[]" ' | tr '}' '\n' | awk -F: '{print $3}'
+}
+
+dpurge () {
+    docker container stop $(docker ps -aq) 
+    docker container rm $(docker ps -aq)
+}
+
+# ref: https://github.com/justincormack/nsenter1
+ddvm() {
+    docker run -it --rm --privileged --pid=host justincormack/nsenter1
+}
