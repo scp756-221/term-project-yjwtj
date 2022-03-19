@@ -128,8 +128,8 @@ The core of the microservices. `s2/v1.1`, `s2/v2`, and `s2/standalone`  are for 
 │   │   └── ./s2/standalone/odd
 │   ├── ./s2/test
 │   ├── ./s2/v1
-│   ├── ./s2/v1.1
-│   └── ./s2/v2
+│   
+│   
 ├── ./s3
 ```
 
