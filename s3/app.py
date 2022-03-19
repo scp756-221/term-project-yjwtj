@@ -6,7 +6,6 @@ The playlist service.
 # Standard library modules
 import logging
 import sys
-import time
 
 # Installed packages
 from flask import Blueprint
@@ -14,7 +13,6 @@ from flask import Flask
 from flask import request
 from flask import Response
 
-import jwt
 from prometheus_flask_exporter import PrometheusMetrics
 import requests
 import simplejson as json
@@ -57,15 +55,12 @@ def list_all():
         return Response(json.dumps({"error": "missing auth"}),
                         status=401,
                         mimetype='application/json')
-    # list all playlists here
-    headers = request.headers
-    if "Authorization" not in headers:
-        return Response(json.dumps({"error": "missing auth"}), status=401,
-                        mimetype='application/json')
     
+    # list all playlists here
     url = db["name"] + '/' + db["endpoint"][0] # read
     response = request.get(url, 
-                           params={"objtype": "playlist", "objkey": ''},
+                           params={"objtype": "playlist",
+                                   "objkey": ''},
                            headers=headers["Authorization"])
     
     return response.json()
@@ -82,7 +77,8 @@ def get_playlist(playlist_id):
     
     url = db["name"] + '/' + db["endpoint"][0] # read
     response = request.get(url, 
-                           params={"objtype": "playlist", "objkey": playlist_id},
+                           params={"objtype": "playlist",
+                                   "objkey": playlist_id},
                            headers=headers["Authorization"])
     
     return response.json()
@@ -122,17 +118,21 @@ def create_list():
         return Response(json.dumps({"error": "missing auth"}),
                         status=401,
                         mimetype='application/json')
+
     try:
         content = request.get_json()
-        PlayListName = content['PlayListName']
-        PlayList = content['PlayList']
+        playlist_name = content['PlayListName']
+        song_list = content['SongList']
     except Exception:
         return json.dumps({"message": "error reading arguments"})
+
     url = db['name'] + '/' + db['endpoint'][1]
-    response = requests.post(
-        url,
-        json={"objtype": "playlist", "PlayListName": ListName, "PlayList": PlayList},
-        headers={'Authorization': headers['Authorization']})
+    response = requests.post(url,
+                             params={"objtype": "playlist"},
+                             json={"PlayListName": playlist_name,
+                                   "SongList": song_list},
+                             headers={'Authorization': headers['Authorization']})
+    
     return (response.json())
 
 
@@ -144,11 +144,13 @@ def delete_list(p_id):
         return Response(json.dumps({"error": "missing auth"}),
                         status=401,
                         mimetype='application/json')
+
     url = db['name'] + '/' + db['endpoint'][2]
     response = requests.delete(
         url,
         params={"objtype": "playlist", "objkey": p_id},
         headers={'Authorization': headers['Authorization']})
+    
     return (response.json())
 
 
