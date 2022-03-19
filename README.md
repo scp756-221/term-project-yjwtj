@@ -130,6 +130,7 @@ The core of the microservices. `s2/v1.1`, `s2/v2`, and `s2/standalone`  are for 
 │   ├── ./s2/v1
 │   ├── ./s2/v1.1
 │   └── ./s2/v2
+├── ./s3
 ```
 
 `results` and `target` need to be created but they are ephemeral and do not need to be saved/committed.
