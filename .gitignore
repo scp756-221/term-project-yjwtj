@@ -1,6 +1,6 @@
 k8s-tpl.mak
 
-8s.mak
+k8s.mak
 eks.mak
 az.mak
 mk.mak
@@ -138,3 +138,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
