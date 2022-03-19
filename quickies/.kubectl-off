@@ -1,0 +1,11 @@
+
+# remove the aliases from .kubectl-a
+
+unalias kc
+unalias kls
+unalias kmkdir
+unalias kcd
+unalias kps
+unalias krmdir
+unalias kmv
+

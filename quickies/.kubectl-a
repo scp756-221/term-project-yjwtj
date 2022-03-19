@@ -1,0 +1,11 @@
+
+# Convenient aliases for kubectl
+
+alias kc='kubectl'
+alias kls='kubectl config get-contexts'
+alias kmkdir='kubectl config set-context '
+alias kcd='kubectl config use-context '
+alias kps='kubectl get po'
+alias krmdir='kubectl config delete-context '
+alias kmv='kubectl config rename-context '
+

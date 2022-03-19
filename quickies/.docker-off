@@ -1,0 +1,18 @@
+
+# Remove the aliases from .docker-a
+
+unalias dls
+unalias drm
+unalias dri
+
+unalias drmc
+unalias dps
+unalias dstop
+unalias dkill
+unalias dcon
+
+unset -f dhtags
+
+unset -f dpurge
+
+unset -f ddvm
