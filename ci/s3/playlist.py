@@ -6,7 +6,6 @@ Python  API for the playlist service.
 import requests
 
 
-
 class Playlist():
     """Python API for the Playlist service.
 
@@ -46,11 +45,10 @@ class Playlist():
         if response.status_code != 200:
             # Failed
             return response.status_code, None, None
-        
+
         item = response.json()["items"][0]
-        return response.status_code, item["PlayListName"], \
-               item["SongList"]
-               
+        return response.status_code, item["PlayListName"], item["SongList"]
+
     def update(self, p_id, song_list):
         """Update a playlist by given song list.
 
@@ -67,7 +65,7 @@ class Playlist():
             json={"SongList": song_list}
         )
         return response.status_code
-        
+
     def create(self, list_name, song=None):
         """Create a playlist.
 
@@ -86,13 +84,9 @@ class Playlist():
             The number is the HTTP status code returned by PlayList.
             The string is the UUID of this playlist in the play list database.
         """
-        if read(list_name) is not None:
-            return Response(json.dumps({"error": "There is alread this list"}),
-                        status=401,
-                        mimetype='application/json')
-        
-        payload = {'PlayListName': list_name,
-                  'SongList': []}
+        if self.read(list_name) is None:
+            payload = {'PlayListName': list_name,
+                       'SongList': []}
         if song is not None:
             payload['SongList'].append(song)
         r = requests.post(
@@ -102,7 +96,7 @@ class Playlist():
         )
         return r.status_code, r.json()['playlist_id']
 
-     def delete(self, p_id):
+    def delete(self, p_id):
         """Delete the playlist
 
         Parameters
