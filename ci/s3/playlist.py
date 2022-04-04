@@ -92,9 +92,9 @@ class Playlist():
                         mimetype='application/json')
         
         payload = {'PlayListName': list_name,
-                  'PlayList': []}
+                  'SongList': []}
         if song is not None:
-            payload['PlayList'].append(song)
+            payload['SongList'].append(song)
         r = requests.post(
             self._url,
             json=payload,
