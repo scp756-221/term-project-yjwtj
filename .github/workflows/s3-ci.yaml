@@ -35,6 +35,10 @@ jobs:
         # This version must match the one specified in `scp756-221/tool-container/Dockerfile`
         run: |
           pip install flake8==4.0.1
+      
+      - name: Install prometheus_client
+        run: |
+          pip install prometheus_client
 
       - name: Instantiate template files
         run: |
