@@ -38,7 +38,7 @@ jobs:
       
       - name: Install prometheus_client
         run: |
-          pip install prometheus_client=0.13.1
+          pip install prometheus_client==0.13.1
 
       - name: Instantiate template files
         run: |
