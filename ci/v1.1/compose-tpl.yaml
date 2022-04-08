@@ -14,7 +14,7 @@ services:
       - "8000:8000"
     working_dir: /home/dynamodblocal
   cmpt756db:
-    build: ../db
+    build: ../../db
     image: ci_db
     container_name: cmpt756db
     ports:
@@ -29,7 +29,7 @@ services:
     depends_on:
       - dynamodb-local
       - cmpt756db
-    build: ../s1
+    build: ../../s1
     image: ci_s1
     container_name: cmpt756s1
     ports:
@@ -38,7 +38,7 @@ services:
     depends_on:
       - dynamodb-local
       - cmpt756db
-    build: ../s2/v1
+    build: ../../s2/v1
     image: ci_s2
     container_name: cmpt756s2
     ports:
@@ -47,7 +47,7 @@ services:
     depends_on:
       - dynamodb-local
       - cmpt756db
-    build: ../s3
+    build: ../../s3
     image: ci_s3
     container_name: cmpt756s3
     ports:
@@ -60,7 +60,7 @@ services:
       - cmpt756s1
       - cmpt756s2
       - cmpt756s3
-    build: ./v1.1
+    build: ./
     image: ci_test
     container_name: test
     environment:
