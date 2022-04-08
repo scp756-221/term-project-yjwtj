@@ -4,9 +4,9 @@ on:
   push:
     paths:
       - db/*
-      - s1/*
-      - s2/v1/*
       - s3/*
+      - s2/v1/*
+      - s1/*
       - ci/v1.1/*
       - .github/workflows/s3-ci.yaml
 
