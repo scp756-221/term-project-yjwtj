@@ -36,9 +36,10 @@ jobs:
         run: |
           pip install flake8==4.0.1
 
-      - name: Instantiate compose.yaml
+      - name: Instantiate template files
         run: |
-          mv ci/v1.1/compose-tpl.yaml ci/v1.1/compose.yaml
+          sed -e "s/ZZ-REG-ID=.*/ZZ-REG-ID=${{ github.repository_owner }}/" cluster/tpl-vars-blank.txt > cluster/tpl-vars.txt
+          make -f k8s-tpl.mak templates
 
       - name: Run CI test
         run: |
