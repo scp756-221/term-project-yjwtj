@@ -36,7 +36,7 @@ jobs:
         run: |
           pip install flake8==4.0.1
 
-      - name: Instantiate ZZ-REG-ID
+      - name: Instantiate compose.yaml
         run: |
           mv ci/v1.1/compose-tpl.yaml ci/v1.1/compose.yaml
 
