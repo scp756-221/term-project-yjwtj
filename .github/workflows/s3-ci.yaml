@@ -36,10 +36,6 @@ jobs:
         run: |
           pip install flake8==4.0.1
       
-      - name: Install prometheus_client
-        run: |
-          pip install prometheus_client==0.13.1
-
       - name: Instantiate template files
         run: |
           sed -e "s/ZZ-REG-ID=.*/ZZ-REG-ID=${{ github.repository_owner }}/" cluster/tpl-vars-blank.txt > cluster/tpl-vars.txt
