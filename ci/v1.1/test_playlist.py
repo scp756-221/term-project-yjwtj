@@ -45,7 +45,7 @@ def test_create_read(plserv):
     plserv.delete(p_id)
 
 
-def test_read_update(plserv):
+def test_read_update(plserv, create_pl):
     # Read playlist
     name = "playlist_0"
     trc, playlistName, songs = plserv.read(create_pl)
@@ -53,6 +53,3 @@ def test_read_update(plserv):
     # Update playlist
     # song = 'My heart will go on'
     # plserv.update(create_pl, song)
-
-    # Delete objects
-    plserv.delete(create_pl)

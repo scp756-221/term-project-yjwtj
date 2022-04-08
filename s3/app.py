@@ -59,10 +59,10 @@ def list_all():
 
     # list all playlists here
     url = db["name"] + '/' + db["endpoint"][0]  # read
-    response = request.get(url,
-                           params={"objtype": "playlist",
-                                   "objkey": ''},
-                           headers=headers["Authorization"])
+    response = requests.get(url,
+                            params={"objtype": "playlist",
+                                    "objkey": ''},
+                            headers=headers["Authorization"])
     return response.json()
 
 
@@ -76,10 +76,11 @@ def get_playlist(playlist_id):
         return Response(json.dumps({"error": "missing auth"}), status=401,
                         mimetype='application/json')
     url = db["name"] + '/' + db["endpoint"][0]  # read
-    response = request.get(url,
-                           params={"objtype": "playlist",
-                                   "objkey": playlist_id},
-                           headers=headers["Authorization"])
+    response = requests.get(url,
+                            params={"objtype": "playlist",
+                                    "objkey": playlist_id},
+                            headers={'Authorization':
+                                     headers["Authorization"]})
     return response.json()
 
 
