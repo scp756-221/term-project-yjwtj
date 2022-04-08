@@ -76,10 +76,10 @@ def get_playlist(playlist_id):
         return Response(json.dumps({"error": "missing auth"}), status=401,
                         mimetype='application/json')
     url = db["name"] + '/' + db["endpoint"][0]  # read
-    response = request.get(url,
-                           params={"objtype": "playlist",
-                                   "objkey": playlist_id},
-                           headers=headers["Authorization"])
+    response = requests.get(url,
+                            params={"objtype": "playlist",
+                                    "objkey": playlist_id},
+                            headers=headers["Authorization"])
     return response.json()
 
 
