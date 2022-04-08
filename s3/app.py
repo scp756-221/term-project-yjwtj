@@ -62,7 +62,8 @@ def list_all():
     response = request.get(url,
                            params={"objtype": "playlist",
                                    "objkey": ''},
-                           headers=headers["Authorization"])
+                           headers={'Authorization':
+                                    headers['Authorization']})
     return response.json()
 
 
@@ -79,7 +80,8 @@ def get_playlist(playlist_id):
     response = requests.get(url,
                             params={"objtype": "playlist",
                                     "objkey": playlist_id},
-                            headers=headers["Authorization"])
+                            headers={'Authorization':
+                                     headers['Authorization']})
     return response.json()
 
 
@@ -103,10 +105,11 @@ def update_playlist(playlist_id):
     response = requests.put(url,
                             params={"objtype": "playlist",
                                     "objkey": playlist_id},
-                            headers=headers["Authorization"],
+                            headers={'Authorization':
+                                     headers['Authorization']},
                             json={"SongList": song_list}
                             )
-    return response.json()
+    return (response.json())
 
 
 @bp.route('/', methods=['POST'])
@@ -117,7 +120,6 @@ def create_list():
         return Response(json.dumps({"error": "missing auth"}),
                         status=401,
                         mimetype='application/json')
-
     try:
         content = request.get_json()
         playlist_name = content['PlayListName']
@@ -127,8 +129,8 @@ def create_list():
 
     url = db['name'] + '/' + db['endpoint'][1]
     response = requests.post(url,
-                             params={"objtype": "playlist"},
-                             json={"PlayListName": playlist_name,
+                             json={"objtype": "playlist",
+                                   "PlayListName": playlist_name,
                                    "SongList": song_list},
                              headers={'Authorization':
                                       headers['Authorization']})
