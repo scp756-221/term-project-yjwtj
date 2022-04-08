@@ -38,7 +38,6 @@ jobs:
 
       - name: Instantiate ZZ-REG-ID
         run: |
-          sed -e "s/ZZ-REG-ID/${{ github.repository_owner }}" ci/v1.1/compose-tpl.yaml
           mv ci/v1.1/compose-tpl.yaml ci/v1.1/compose.yaml
 
       - name: Run CI test
