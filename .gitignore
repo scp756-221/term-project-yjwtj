@@ -1,5 +1,3 @@
-k8s-tpl.mak
-
 k8s.mak
 eks.mak
 az.mak
