@@ -99,6 +99,7 @@ if __name__ == '__main__':
 
     resource_dir = '/data'
 
+    print("LOADING USERS . . .")
     with open('{}/users/users.csv'.format(resource_dir), 'r') as inp:
         rdr = csv.reader(inp)
         next(rdr)  # Skip header
@@ -113,7 +114,7 @@ if __name__ == '__main__':
                                                                   ln,
                                                                   email,
                                                                   uuid))
-
+    print("LOADING MUSIC . . .")
     with open('{}/music/music.csv'.format(resource_dir), 'r') as inp:
         rdr = csv.reader(inp)
         next(rdr)  # Skip header
@@ -127,14 +128,14 @@ if __name__ == '__main__':
                                                              title,
                                                              uuid))
     
-    with open('{}/playlist/playlist.csv'.format(resource_dir), 'r') as inp:
-        rdr = csv.reader(inp)
-        next(rdr)  # Skip header
-        for list_name, song_list_str, uuid in rdr:
-            resp = create_playlist(list_name.strip(),
-                                   song_list_str.strip(),
-                                   uuid.strip())
-            resp = check_resp(resp, 'playlist_id')
-            if resp is None or resp != uuid:
-                print('Error creating playlist {} {}, {}'.format(
-                                            list_name, song_list_str, uuid))
+    # with open('{}/playlist/playlist.csv'.format(resource_dir), 'r') as inp:
+    #     rdr = csv.reader(inp)
+    #     next(rdr)  # Skip header
+    #     for list_name, song_list_str, uuid in rdr:
+    #         resp = create_playlist(list_name.strip(),
+    #                                song_list_str.strip(),
+    #                                uuid.strip())
+    #         resp = check_resp(resp, 'playlist_id')
+    #         if resp is None or resp != uuid:
+    #             print('Error creating playlist {} {}, {}'.format(
+    #                                         list_name, song_list_str, uuid))
