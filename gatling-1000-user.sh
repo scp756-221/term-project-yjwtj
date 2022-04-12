@@ -4,12 +4,8 @@ docker container run --detach --rm \
   -v ${PWD}/gatling:/opt/gatling/user-files \
   -v ${PWD}/gatling/target:/opt/gatling/target \
   -e CLUSTER_IP=`tools/getip.sh kubectl istio-system svc/istio-ingressgateway`\
-<<<<<<< Updated upstream
-  -e USERS=1 \
-=======
-  -e USERS=10 \
->>>>>>> Stashed changes
-  -e SIM_NAME=ReadMusicSim \
+  -e USERS=1000 \
+  -e SIM_NAME=ReadUserSim \
   --label gatling \
   ghcr.io/t2wan/gatling:3.4.2 \
-  -s proj756.ReadMusicSim
+  -s proj756.ReadUserSim
