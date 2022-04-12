@@ -56,7 +56,7 @@ object RUser {
 
 object RPlaylist {
 
-  val feeder = csv("playlist.csv").eager.circular
+  val feeder = csv("playlist.csv").eager.random
 
   val rplaylist = forever("i") {
     feed(feeder)
@@ -96,6 +96,22 @@ object RMusicVarying {
   }
 }
 
+
+/*
+  After one S3 read, pause a random time between 1 and 60 s
+*/
+
+object RPlaylistVarying {
+  val feeder = csv("playlist.csv").eager.circular
+
+  val rplaylist = forever("i") {
+    feed(feeder)
+    .exec(http("RPlaylistVarying ${i}")
+      .get("/api/v1/playlist/${UUID}"))
+    .pause(1, 60)
+  }
+}
+
 /*
   Failed attempt to interleave reads from User and Music tables.
   The Gatling EDSL only honours the second (Music) read,
@@ -115,7 +131,7 @@ object RBoth {
     feed(m_feeder)
     .exec(http("RMusic ${i}")
       .get("/api/v1/music/${UUID}"))
-      .pause(1)
+      .pause(1);
   }
 
 }
@@ -123,7 +139,7 @@ object RBoth {
 // Get Cluster IP from CLUSTER_IP environment variable or default to 127.0.0.1 (Minikube)
 class ReadTablesSim extends Simulation {
   val httpProtocol = http
-    .baseUrl("http://" + Utility.envVar("CLUSTER_IP", "127.0.0.1") + "/")
+    .baseUrl("http://" + Utility.envVar("CLUSTER_IP", "10.100.4.220") + "/")
     .acceptHeader("application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     .authorizationHeader("Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiZGJmYmMxYzAtMDc4My00ZWQ3LTlkNzgtMDhhYTRhMGNkYTAyIiwidGltZSI6MTYwNzM2NTU0NC42NzIwNTIxfQ.zL4i58j62q8mGUo5a0SQ7MHfukBUel8yl8jGT5XmBPo")
     .acceptLanguageHeader("en-US,en;q=0.5")
@@ -167,13 +183,17 @@ class ReadBothVaryingSim extends ReadTablesSim {
 
   val scnReadUV = scenario("ReadUserVarying")
     .exec(RUserVarying.ruser)
+  
+  val scnReadPV = scenario("ReadPlaylistVarying")
+    .exec(RPlaylistVarying.rplaylist)
 
   val users = Utility.envVarToInt("USERS", 10)
 
   setUp(
     // Add one user per 10 s up to specified value
     scnReadMV.inject(rampConcurrentUsers(1).to(users).during(10*users)),
-    scnReadUV.inject(rampConcurrentUsers(1).to(users).during(10*users))
+    scnReadUV.inject(rampConcurrentUsers(1).to(users).during(10*users)),
+    scnReadPV.inject(rampConcurrentUsers(1).to(users).during(10*users)),
   ).protocols(httpProtocol)
 }
 
