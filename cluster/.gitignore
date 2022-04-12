@@ -1,5 +1,6 @@
 db.yaml
 s1.yaml
+s3.yaml
 s2-dpl-v*.yaml
 !s2-dpl-*-tpl.yaml
 loader.yaml

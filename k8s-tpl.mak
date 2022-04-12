@@ -1,3 +1,4 @@
+
 #
 # Front-end to bring some sanity to the litany of tools and switches
 # for working with a k8s cluster. Note that this file exercise core k8s
@@ -63,21 +64,28 @@ templates:
 # 2. Current context is a running Kubernetes cluster (make -f {az,eks,gcp,mk}.mak start)
 #
 #  Nov 2021: Kiali is causing problems so do not deploy
-#provision: istio prom kiali deploy
-provision: istio prom deploy
+#  Feb 2022: Kiali 1.45.0 works. (Refer to obs.mak's KIALI_VER)
+provision: istio prom kiali deploy
+#provision: istio prom deploy
+
+provision-no-deploy: istio prom kiali
 
 # --- deploy: Deploy and monitor the three microservices
 # Use `provision` to deploy the entire stack (including Istio, Prometheus, ...).
 # This target only deploys the sample microservices
-deploy: appns gw s1 s2 db monitoring
+deploy: appns gw s1 s2 s3 db monitoring
 	$(KC) -n $(APP_NS) get gw,vs,deploy,svc,pods
 
 # --- rollout: Rollout new deployments of all microservices
-rollout: rollout-s1 rollout-s2 rollout-db
+rollout: rollout-s1 rollout-s2 rollout-s3 rollout-db
 
 # --- rollout-s1: Rollout a new deployment of S1
 rollout-s1: s1
 	$(KC) rollout -n $(APP_NS) restart deployment/cmpt756s1
+
+# --- rollout-s3: Rollout a new deployment of S3
+rollout-s3: s3
+	$(KC) rollout -n $(APP_NS) restart deployment/cmpt756s3
 
 # --- rollout-s2: Rollout a new deployment of S2
 rollout-s2: $(LOG_DIR)/s2-$(S2_VER).repo.log  cluster/s2-dpl-$(S2_VER).yaml
@@ -94,22 +102,23 @@ health-off:
 	$(KC) -n $(APP_NS) apply -f cluster/s1-nohealth.yaml
 	$(KC) -n $(APP_NS) apply -f cluster/s2-nohealth.yaml
 	$(KC) -n $(APP_NS) apply -f cluster/db-nohealth.yaml
+# Not implemented for s3
 
 # --- scratch: Delete the microservices and everything else in application NS
 scratch: clean
-	$(KC) delete -n $(APP_NS) deploy --all
-	$(KC) delete -n $(APP_NS) svc    --all
-	$(KC) delete -n $(APP_NS) gw     --all
-	$(KC) delete -n $(APP_NS) dr     --all
-	$(KC) delete -n $(APP_NS) vs     --all
-	$(KC) delete -n $(APP_NS) se     --all
-	$(KC) delete -n $(ISTIO_NS) vs monitoring --ignore-not-found=true
-	$(KC) get -n $(APP_NS) deploy,svc,pods,gw,dr,vs,se
-	$(KC) get -n $(ISTIO_NS) vs
+	$(KC) delete -n $(APP_NS) deploy --all || true
+	$(KC) delete -n $(APP_NS) svc    --all || true
+	$(KC) delete -n $(APP_NS) gw     --all || true
+	$(KC) delete -n $(APP_NS) dr     --all || true
+	$(KC) delete -n $(APP_NS) vs     --all || true
+	$(KC) delete -n $(APP_NS) se     --all || true
+	$(KC) delete -n $(ISTIO_NS) vs monitoring --ignore-not-found=true || true
+	$(KC) get -n $(APP_NS) deploy,svc,pods,gw,dr,vs,se || ture
+	$(KC) get -n $(ISTIO_NS) vs || true
 
 # --- clean: Delete all the application log files
 clean:
-	/bin/rm -f $(LOG_DIR)/{s1,s2,db,gw,monvs}*.log $(LOG_DIR)/rollout*.log
+	/bin/rm -f $(LOG_DIR)/{s1,s2,s3,db,gw,monvs,loader}*.log $(LOG_DIR)/rollout*.log
 
 # --- dashboard: Start the standard Kubernetes dashboard
 # NOTE:  Before invoking this, the dashboard must be installed and a service account created
@@ -135,6 +144,9 @@ log-s2:
 log-db:
 	$(KC) -n $(APP_NS) logs deployment/cmpt756db --container cmpt756db
 
+log-s3:
+	$(KC) -n $(APP_NS) logs deployment/cmpt756s3 --container cmpt756s3
+
 
 # --- shell-X: hint for shell into a particular service
 shell-s1:
@@ -143,7 +155,11 @@ shell-s1:
 
 shell-s2:
 	@echo Use the following command line to drop into the s2 service:
-	@echo   $(KC) -n $(APP_NS) exec -it deployment/cmpt756s2 --container cmpt756s2 -- bash
+	@echo   $(KC) -n $(APP_NS) exec -it deployment/cmpt756s2-$(S2_VER) --container cmpt756s2 -- bash
+
+shell-s3:
+	@echo Use the following command line to drop into the s1 service:
+	@echo   $(KC) -n $(APP_NS) exec -it deployment/cmpt756s3 --container cmpt756s3 -- bash
 
 shell-db:
 	@echo Use the following command line to drop into the db service:
@@ -173,10 +189,11 @@ showcontext:
 	$(KC) config get-contexts
 
 # Run the loader, rebuilding if necessary, starting DynamDB if necessary, building ConfigMaps
-loader: dynamodb-init $(LOG_DIR)/loader.repo.log cluster/loader.yaml
+loader: clean dynamodb-init $(LOG_DIR)/loader.repo.log cluster/loader.yaml
 	$(KC) -n $(APP_NS) delete --ignore-not-found=true jobs/cmpt756loader
 	tools/build-configmap.sh gatling/resources/users.csv cluster/users-header.yaml | kubectl -n $(APP_NS) apply -f -
 	tools/build-configmap.sh gatling/resources/music.csv cluster/music-header.yaml | kubectl -n $(APP_NS) apply -f -
+	tools/build-configmap.sh gatling/resources/playlist.csv cluster/playlist-header.yaml | kubectl -n $(APP_NS) apply -f -
 	$(KC) -n $(APP_NS) apply -f cluster/loader.yaml | tee $(LOG_DIR)/loader.log
 
 # --- dynamodb-init: set up our DynamoDB tables
@@ -260,7 +277,9 @@ istio:
 appns:
 	# Appended "|| true" so that make continues even when command fails
 	# because namespace already exists
+	$(KC) config use-context aws756
 	$(KC) create ns $(APP_NS) || true
+	$(KC) config set-context aws756 --namespace=$(APP_NS)
 	$(KC) label namespace $(APP_NS) --overwrite=true istio-injection=enabled
 
 # Update monitoring virtual service and display result
@@ -287,6 +306,11 @@ s2: rollout-s2 cluster/s2-svc.yaml cluster/s2-sm.yaml cluster/s2-vs.yaml
 	$(KC) -n $(APP_NS) apply -f cluster/s2-sm.yaml | tee -a $(LOG_DIR)/s2.log
 	$(KC) -n $(APP_NS) apply -f cluster/s2-vs.yaml | tee -a $(LOG_DIR)/s2.log
 
+s3: $(LOG_DIR)/s3.repo.log cluster/s3.yaml cluster/s3-sm.yaml cluster/s3-vs.yaml
+	$(KC) -n $(APP_NS) apply -f cluster/s3.yaml | tee $(LOG_DIR)/s3.log
+	$(KC) -n $(APP_NS) apply -f cluster/s3-sm.yaml | tee -a $(LOG_DIR)/s3.log
+	$(KC) -n $(APP_NS) apply -f cluster/s3-vs.yaml | tee -a $(LOG_DIR)/s3.log
+
 # Update DB and associated monitoring, rebuilding if necessary
 db: $(LOG_DIR)/db.repo.log cluster/awscred.yaml cluster/dynamodb-service-entry.yaml cluster/db.yaml cluster/db-sm.yaml cluster/db-vs.yaml
 	$(KC) -n $(APP_NS) apply -f cluster/awscred.yaml | tee $(LOG_DIR)/db.log
@@ -296,13 +320,19 @@ db: $(LOG_DIR)/db.repo.log cluster/awscred.yaml cluster/dynamodb-service-entry.y
 	$(KC) -n $(APP_NS) apply -f cluster/db-vs.yaml | tee -a $(LOG_DIR)/db.log
 
 # Build & push the images up to the CR
-cri: $(LOG_DIR)/s1.repo.log $(LOG_DIR)/s2-$(S2_VER).repo.log $(LOG_DIR)/db.repo.log
+cri: clean $(LOG_DIR)/s1.repo.log $(LOG_DIR)/s3.repo.log $(LOG_DIR)/s2-$(S2_VER).repo.log $(LOG_DIR)/db.repo.log
 
 # Build the s1 service
 $(LOG_DIR)/s1.repo.log: s1/Dockerfile s1/app.py s1/requirements.txt
 	make -f k8s.mak --no-print-directory registry-login
 	$(DK) build $(ARCH) -t $(CREG)/$(REGID)/cmpt756s1:$(APP_VER_TAG) s1 | tee $(LOG_DIR)/s1.img.log
 	$(DK) push $(CREG)/$(REGID)/cmpt756s1:$(APP_VER_TAG) | tee $(LOG_DIR)/s1.repo.log
+
+# Build the s3 service
+$(LOG_DIR)/s3.repo.log: s3/Dockerfile s3/app.py s3/requirements.txt
+	make -f k8s.mak --no-print-directory registry-login
+	$(DK) build $(ARCH) -t $(CREG)/$(REGID)/cmpt756s3:$(APP_VER_TAG) s3 | tee $(LOG_DIR)/s3.img.log
+	$(DK) push $(CREG)/$(REGID)/cmpt756s3:$(APP_VER_TAG) | tee $(LOG_DIR)/s3.repo.log
 
 # Build the s2 service
 $(LOG_DIR)/s2-$(S2_VER).repo.log: s2/$(S2_VER)/Dockerfile s2/$(S2_VER)/app.py s2/$(S2_VER)/requirements.txt
@@ -327,12 +357,10 @@ $(LOG_DIR)/loader.repo.log: loader/app.py loader/requirements.txt loader/Dockerf
 cr: registry-login
 	$(DK) push $(CREG)/$(REGID)/cmpt756s1:$(APP_VER_TAG) | tee $(LOG_DIR)/s1.repo.log
 	$(DK) push $(CREG)/$(REGID)/cmpt756s2:$(S2_VER) | tee $(LOG_DIR)/s2.repo.log
+	$(DK) push $(CREG)/$(REGID)/cmpt756s3:$(APP_VER_TAG) | tee $(LOG_DIR)/s3.repo.log
 	$(DK) push $(CREG)/$(REGID)/cmpt756db:$(APP_VER_TAG) | tee $(LOG_DIR)/db.repo.log
 
 # ---------------------------------------------------------------------------------------
 # Handy bits for exploring the container images... not necessary
 image: showcontext registry-login
-	$(DK) image ls | tee __header | grep $(REGID) > __content
-	head -n 1 __header
-	cat __content
-	rm __content __header
+	$(DK) image ls | grep -e $(REGID) -e REPOSITORY
